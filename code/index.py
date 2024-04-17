@@ -1,9 +1,11 @@
 import pygame, sys
+from time import sleep
 from player import Player
 import obstacle
 from alien import Alien, Extra
 from random import choice, randint
 from laser import Laser
+
 
 class Game:
     def __init__(self):
@@ -44,6 +46,9 @@ class Game:
         self.laser_sound.set_volume(0.1)
         self.explosion_sound = pygame.mixer.Sound("../audio/explosion.wav")
         self.explosion_sound.set_volume(0.15)
+
+        # joysticks
+        self.joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
 
 
     def create_obstacle(self, x_start, y_start, offset_x):
@@ -127,8 +132,14 @@ class Game:
                     laser.kill()
                     self.lives -= 1
                     if self.lives <= 0:
+                        if len(self.joysticks) > 0:
+                            self.joysticks[0].rumble(0.7,0.7, 300)
+                            sleep(0.3)
                         pygame.quit()
                         sys.exit()
+                    
+                    if len(self.joysticks) > 0:
+                        self.joysticks[0].rumble(0.4,0.4, 400)
         
         # aliens
         if self.aliens:
@@ -136,6 +147,9 @@ class Game:
                 pygame.sprite.spritecollide(alien, self.blocks, True)
 
                 if pygame.sprite.spritecollide(alien, self.player, False):
+                    if len(self.joysticks) > 0:
+                        self.joysticks[0].rumble(0.7,0.7, 300)
+                        sleep(0.3)
                     pygame.quit()
                     sys.exit()
 
@@ -201,6 +215,7 @@ class CRT:
 
 if __name__ == "__main__":
     pygame.init()
+    pygame.joystick.init()
     screen_width = 600
     screen_height = 600
     screen = pygame.display.set_mode((screen_width, screen_height))
